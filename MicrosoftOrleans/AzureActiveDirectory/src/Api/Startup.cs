@@ -1,5 +1,4 @@
 ﻿using Api.Orleans;
-using Authzi.AzureActiveDirectory;
 using Common;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Builder;
@@ -10,11 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
 using Orleans;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using static Common.HttpClientExtensions;
 
 namespace Api
 {
@@ -31,19 +29,20 @@ namespace Api
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        // This method gets called by the runtime.
+        // Use this method to add services to the container.
+        // For more information on how to configure your application,
+        // visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // Azure Active Directory credentials. Do not use this for production!
-            var app = new AzureActiveDirectoryApp("", "", "",
-                new List<string>());
-
             // Read Azure Storage connection string.
             var simpleClusterAzureStorageConnection =
                 Environment.GetEnvironmentVariable(EnvironmentVariables.SimpleClusterAzureStorageConnection);
 
-            // TODO: Add Azure AD Authentication.
+            // How to secure a Web API built with ASP.NET Core using the Microsoft identity platform
+            // https://github.com/Azure-Samples/active-directory-aspnetcore-webapp-openidconnect-v2/tree/master/4-WebApp-your-API/4-1-MyOrg
+
+            services.AddMicrosoftIdentityWebApiAuthentication(_configuration);
 
             services.AddControllers();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -56,7 +55,7 @@ namespace Api
 
                 var provider = new OrleansClusterClientProvider(
                     serviceProvider.GetService<IHttpContextAccessor>(),
-                    logger, app, simpleClusterAzureStorageConnection,
+                    logger, Config.ApiClientCredentials, simpleClusterAzureStorageConnection,
                     telemetryClient);
 
                 provider.StartClientWithRetries(out var client);

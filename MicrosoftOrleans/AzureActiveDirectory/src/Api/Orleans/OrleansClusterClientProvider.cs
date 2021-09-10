@@ -63,7 +63,7 @@ namespace Api.Orleans
                 .ConfigureServices(services =>
                 {
                     services.AddOrleansAzureActiveDirectoryAuthorization(_azureActiveDirectoryApp);
-                    services.AddOrleansClusteringAuthorization(
+                    services.AddOrleansClientAuthorization(
                         config =>
                         {
                             config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;

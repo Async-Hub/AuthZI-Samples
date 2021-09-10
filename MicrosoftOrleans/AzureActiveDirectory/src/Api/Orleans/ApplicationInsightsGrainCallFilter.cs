@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
+﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Orleans;
+using System;
+using System.Threading.Tasks;
 
 namespace Api.Orleans
 {
@@ -51,10 +51,10 @@ namespace Api.Orleans
                 Name = $"TCP {Common.Config.SiloHostName} TCP Port: {Common.Config.SiloHostGatewayPort}"
             };
 
-                //requestTelemetry.Context.Operation.Id = GetOperationId(requestId);
-                dependencyTelemetry.Context.Operation.ParentId = originalContext.Operation.Id;
+            //requestTelemetry.Context.Operation.Id = GetOperationId(requestId);
+            dependencyTelemetry.Context.Operation.ParentId = originalContext.Operation.Id;
 
-                return dependencyTelemetry;
+            return dependencyTelemetry;
         }
     }
 }

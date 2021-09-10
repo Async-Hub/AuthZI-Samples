@@ -1,4 +1,4 @@
-﻿using IdentityModel.Client;
+﻿using Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -7,10 +7,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
-using static Common.HttpClientExtensions;
 
 namespace WebClient
 {
@@ -25,8 +24,11 @@ namespace WebClient
             _configuration = configuration;
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+
+        // This method gets called by the runtime.
+        // Use this method to add services to the container.
+        // For more information on how to configure your application,
+        // visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
@@ -37,38 +39,26 @@ namespace WebClient
                 client.BaseAddress = new Uri(Common.Config.ApiUrl);
             });
 
+            // Quickstart: Add sign-in with Microsoft to an ASP.NET Core web app
+            // https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-v2-aspnet-core-webapp
+
             services.AddAuthentication(options =>
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
                 })
-                .AddCookie();
-                //.AddOpenIdConnect(options =>
-                //{
-                //    // For development environments only. Do not use for production.
-                //    options.RequireHttpsMetadata = false;
-
-                //    options.GetClaimsFromUserInfoEndpoint = true;
-                //    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-
-                //    options.Authority = Common.Config.IdentityServerUrl;
-                //    options.ClientId = "WebClient";
-                //    options.ClientSecret = "pckJ#MH-9f9K?+^Bzx&4";
-
-                //    options.ResponseType = "code";
-                //    options.UsePkce = true;
-                //    options.SaveTokens = true;
-
-                //    options.Scope.Add("Api1");
-                //    options.Scope.Add("Cluster");
-                //    options.Scope.Add("Api1.Read");
-                //    options.Scope.Add("Api1.Write");
-
-                //    options.Scope.Add("offline_access");
-
-                //    var isNonProductionEnvironment = _env.IsDevelopment() || _env.IsStaging();
-                //    options.BackchannelHttpHandler = CreateHttpClientHandler(true);
-                //});
+                .AddMicrosoftIdentityWebApp(options =>
+                {
+                    options.Instance = "https://login.microsoftonline.com/";
+                    options.TenantId = Config.WebClientCredentials.DirectoryId;
+                    options.ClientId = Config.WebClientCredentials.ClientId;
+                    options.ClientSecret = Config.WebClientCredentials.ClientSecret;
+                    options.Domain = Config.Domain;
+                    options.CallbackPath = "/signin-oidc";
+                })
+                // Access Token with required scopes.
+                .EnableTokenAcquisitionToCallDownstreamApi(Config.Api1Scopes)
+                .AddInMemoryTokenCaches();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddControllersWithViews();
