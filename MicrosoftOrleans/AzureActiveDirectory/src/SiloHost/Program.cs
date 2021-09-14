@@ -52,9 +52,6 @@ namespace SiloHost
 
         private static async Task<IHost> StartSilo(string simpleClusterAzureStorageConnection)
         {
-            var app = new AzureActiveDirectoryApp("", "", "", 
-                new List<string>());
-
             var builder = new HostBuilder()
                 .UseEnvironment(Environments.Staging)
                 .ConfigureServices((hostContext, services) =>
@@ -100,7 +97,7 @@ namespace SiloHost
                             parts.AddApplicationPart(typeof(UserGrain).Assembly).WithReferences())
                         .ConfigureServices(services =>
                         {
-                            services.AddOrleansAzureActiveDirectoryAuthorization(app);
+                            services.AddOrleansAzureActiveDirectoryAuthorization(Config.OrleansClientCredentials);
                             services.AddOrleansClusteringAuthorization(
                                 config =>
                                 {

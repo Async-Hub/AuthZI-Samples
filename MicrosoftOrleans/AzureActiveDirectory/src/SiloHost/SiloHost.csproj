@@ -17,8 +17,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Authzi.AzureActiveDirectory.MicrosoftOrleans" Version="0.1.1" />
-    <PackageReference Include="Authzi.MicrosoftOrleans" Version="0.1.1" />
+    <PackageReference Include="Authzi.AzureActiveDirectory.MicrosoftOrleans" Version="0.1.6" />
+    <PackageReference Include="Authzi.MicrosoftOrleans" Version="0.1.6" />
     <PackageReference Include="Microsoft.ApplicationInsights.DependencyCollector" Version="2.17.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.17.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />

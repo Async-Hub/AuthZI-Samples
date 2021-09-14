@@ -10,7 +10,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.4.3" />
-    <PackageReference Include="Authzi.Security" Version="0.1.0" />
+    <PackageReference Include="Authzi.Security" Version="0.1.6" />
   </ItemGroup>
 
   <ItemGroup>
