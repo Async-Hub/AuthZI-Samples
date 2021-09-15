@@ -1,4 +1,4 @@
-﻿using Orleans.Security.Authorization;
+﻿using Authzi.Security.Authorization;
 
 namespace GrainsInterfaces
 {

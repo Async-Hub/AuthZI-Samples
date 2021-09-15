@@ -1,4 +1,5 @@
 ﻿using Api.Orleans;
+using Authzi.IdentityServer4;
 using Common;
 using IdentityModel.AspNetCore.AccessTokenValidation;
 using IdentityModel.AspNetCore.OAuth2Introspection;
@@ -13,7 +14,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Orleans;
-using Orleans.Security;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using static Common.HttpClientExtensions;

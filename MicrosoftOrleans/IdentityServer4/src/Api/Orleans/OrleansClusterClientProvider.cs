@@ -1,5 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Authzi.IdentityServer4;
+using Authzi.IdentityServer4.MicrosoftOrleans;
+using Authzi.MicrosoftOrleans;
+using Authzi.Security;
 using GrainsInterfaces;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
@@ -9,8 +11,8 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Runtime;
-using Orleans.Security;
-using Orleans.Security.Client;
+using System;
+using System.Threading.Tasks;
 
 namespace Api.Orleans
 {
@@ -56,13 +58,13 @@ namespace Api.Orleans
                     options.ServiceId = "ServiceId1";
                 })
                 .AddOutgoingGrainCallFilter<ApplicationInsightsGrainCallFilter>()
-                .ConfigureApplicationParts(parts => 
+                .ConfigureApplicationParts(parts =>
                     parts.AddApplicationPart(typeof(IUserGrain).Assembly).WithReferences())
                 .ConfigureLogging(logging => logging.AddConsole())
                 .ConfigureServices(services =>
                 {
-                    services.AddOrleansClusteringAuthorization(_identityServer4Info,
-                        config =>
+                    services.AddOrleansIdentityServer4Authorization(_identityServer4Info);
+                    services.AddOrleansClientAuthorization(config =>
                         {
                             config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
                             config.ConfigureAccessTokenVerifierOptions = options =>
@@ -80,7 +82,7 @@ namespace Api.Orleans
 
                     services.AddSingleton<Func<IHttpContextAccessor>>(serviceProvider => () => _httpContextAccessor);
                     services.AddSingleton<TelemetryClient>(serviceProvider => _telemetryClient);
-                    services.AddScoped<IAccessTokenProvider, AspNetCoreAccessTokenProvider>();
+                    services.AddTransient<IAccessTokenProvider, AspNetCoreAccessTokenProvider>();
                 });
 
             return builder.Build();

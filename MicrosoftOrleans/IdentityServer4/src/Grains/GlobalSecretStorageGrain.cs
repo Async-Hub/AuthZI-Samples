@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using GrainsInterfaces;
+﻿using GrainsInterfaces;
 using Orleans;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Grains
 {

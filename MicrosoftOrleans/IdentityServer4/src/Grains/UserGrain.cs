@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Authzi.Security;
 using GrainsInterfaces;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Orleans.Security;
+using System;
+using System.Threading.Tasks;
 
 namespace Grains
 {

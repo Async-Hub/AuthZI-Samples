@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Authzi.Security;
 using GrainsInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
+using System;
 using System.Threading.Tasks;
-using Orleans.Security;
 
 namespace Api.Controllers
 {

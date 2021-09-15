@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Authzi.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Orleans.Security;
+using System;
+using System.Threading.Tasks;
 
 namespace Api.Orleans
 {

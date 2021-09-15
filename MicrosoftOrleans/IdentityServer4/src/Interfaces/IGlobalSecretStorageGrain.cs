@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using Authzi.Security.Authorization;
 using Orleans;
-using Orleans.Security.Authorization;
+using System.Threading.Tasks;
 
 namespace GrainsInterfaces
 {
