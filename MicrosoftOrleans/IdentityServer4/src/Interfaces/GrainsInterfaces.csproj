@@ -11,7 +11,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 	  
-    <PackageReference Include="Authzi.Security.Authorization" Version="0.1.7" />
+    <PackageReference Include="Authzi.Security.Authorization" Version="0.1.8" />
   </ItemGroup>
 
   <ItemGroup>

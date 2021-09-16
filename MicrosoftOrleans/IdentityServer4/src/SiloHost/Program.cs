@@ -1,6 +1,5 @@
 ﻿using Authzi.IdentityServer4;
-using Authzi.IdentityServer4.MicrosoftOrleans;
-using Authzi.MicrosoftOrleans;
+using Authzi.MicrosoftOrleans.IdentityServer4;
 using Common;
 using Grains;
 using GrainsInterfaces;
@@ -99,8 +98,7 @@ namespace SiloHost
                             parts.AddApplicationPart(typeof(UserGrain).Assembly).WithReferences())
                         .ConfigureServices(services =>
                         {
-                            services.AddOrleansIdentityServer4Authorization(identityServer4Info);
-                            services.AddOrleansClusteringAuthorization(
+                            services.AddOrleansAuthorization(identityServer4Info,
                                 config =>
                                 {
                                     config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;

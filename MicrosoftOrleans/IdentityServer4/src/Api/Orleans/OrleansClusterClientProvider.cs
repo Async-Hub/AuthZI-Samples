@@ -1,6 +1,5 @@
 ﻿using Authzi.IdentityServer4;
-using Authzi.IdentityServer4.MicrosoftOrleans;
-using Authzi.MicrosoftOrleans;
+using Authzi.MicrosoftOrleans.IdentityServer4;
 using Authzi.Security;
 using GrainsInterfaces;
 using Microsoft.ApplicationInsights;
@@ -63,8 +62,7 @@ namespace Api.Orleans
                 .ConfigureLogging(logging => logging.AddConsole())
                 .ConfigureServices(services =>
                 {
-                    services.AddOrleansIdentityServer4Authorization(_identityServer4Info);
-                    services.AddOrleansClientAuthorization(config =>
+                    services.AddOrleansClientAuthorization(_identityServer4Info, config =>
                         {
                             config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
                             config.ConfigureAccessTokenVerifierOptions = options =>
