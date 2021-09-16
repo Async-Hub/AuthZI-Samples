@@ -1,5 +1,5 @@
 ﻿using Authzi.AzureActiveDirectory;
-using Authzi.AzureActiveDirectory.MicrosoftOrleans;
+using Authzi.MicrosoftOrleans.AzureActiveDirectory;
 using Authzi.Security;
 using GrainsInterfaces;
 using Microsoft.ApplicationInsights;
@@ -11,7 +11,6 @@ using Orleans.Configuration;
 using Orleans.Runtime;
 using System;
 using System.Threading.Tasks;
-using Authzi.MicrosoftOrleans;
 
 namespace Api.Orleans
 {
@@ -62,8 +61,7 @@ namespace Api.Orleans
                 .ConfigureLogging(logging => logging.AddConsole())
                 .ConfigureServices(services =>
                 {
-                    services.AddOrleansAzureActiveDirectoryAuthorization(_azureActiveDirectoryApp);
-                    services.AddOrleansClientAuthorization(
+                    services.AddOrleansClientAuthorization(_azureActiveDirectoryApp,
                         config =>
                         {
                             config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;

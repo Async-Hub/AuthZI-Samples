@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Authzi.AzureActiveDirectory" Version="0.1.6" />
+    <PackageReference Include="Authzi.AzureActiveDirectory" Version="0.1.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.*" />
   </ItemGroup>
 

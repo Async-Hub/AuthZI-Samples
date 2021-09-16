@@ -1,6 +1,4 @@
-﻿using Authzi.AzureActiveDirectory;
-using Authzi.AzureActiveDirectory.MicrosoftOrleans;
-using Authzi.MicrosoftOrleans;
+﻿using Authzi.MicrosoftOrleans.AzureActiveDirectory;
 using Common;
 using Grains;
 using GrainsInterfaces;
@@ -13,7 +11,6 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SiloHost
@@ -97,8 +94,7 @@ namespace SiloHost
                             parts.AddApplicationPart(typeof(UserGrain).Assembly).WithReferences())
                         .ConfigureServices(services =>
                         {
-                            services.AddOrleansAzureActiveDirectoryAuthorization(Config.OrleansClientCredentials);
-                            services.AddOrleansClusteringAuthorization(
+                            services.AddOrleansAuthorization(Config.OrleansClientCredentials,
                                 config =>
                                 {
                                     config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
