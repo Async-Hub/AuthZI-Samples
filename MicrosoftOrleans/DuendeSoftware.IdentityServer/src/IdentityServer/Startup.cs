@@ -18,13 +18,7 @@ namespace IdentityServer4
         public void ConfigureServices(IServiceCollection services)
         {
             // configure identity server with in-memory stores, keys, clients and resources
-            services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
-                .AddInMemoryApiScopes(IdentityServerConfig.GetApiScopes())
-                .AddInMemoryApiResources(IdentityServerConfig.GetApiResources())
-                .AddInMemoryIdentityResources(IdentityServerConfig.GetIdentityResources())
-                .AddInMemoryClients(IdentityServerConfig.GetClients())
-                .AddTestUsers(IdentityServerConfig.GetUsers());
+            
 
             services.AddControllersWithViews(); ;
         }
@@ -41,6 +35,7 @@ namespace IdentityServer4
             app.UseIdentityServer();
 
             app.UseRouting();
+            app.UseCookiePolicy();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });

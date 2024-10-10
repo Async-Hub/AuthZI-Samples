@@ -1,51 +1,34 @@
-﻿using Common;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.IO;
+using IdentityServer4;
 
-namespace IdentityServer4
-{
-    public static class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+var builder = WebApplication.CreateBuilder(args);
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services =>
-                {
-                    var config = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", optional: true)
-                        .Build();
+builder.Services.AddRazorPages();
 
-                    // ApplicationInsights
-                    services.AddSingleton<ITelemetryInitializer, MyTelemetryInitializer>();
-                    services.AddApplicationInsightsTelemetry();
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    // Providing an instrumentation key here is required if you're using
-                    // standalone package Microsoft.Extensions.Logging.ApplicationInsights
-                    // or if you want to capture logs from early in the application startup
-                    // pipeline from Startup.cs or Program.cs itself.
-                    loggingBuilder.AddApplicationInsights(Config.InstrumentationKey);
+builder.Services.AddIdentityServer()
+  .AddDeveloperSigningCredential()
+  .AddInMemoryApiScopes(IdentityServerConfig.GetApiScopes())
+  .AddInMemoryApiResources(IdentityServerConfig.GetApiResources())
+  .AddInMemoryIdentityResources(IdentityServerConfig.GetIdentityResources())
+  .AddInMemoryClients(IdentityServerConfig.GetClients())
+  //.AddAspNetIdentity<ApplicationUser>()
+  .AddTestUsers(IdentityServerConfig.GetUsers());
 
-                    // Optional: Apply filters to control what logs are sent to Application Insights.
-                    // The following configures LogLevel Information or above to be sent to
-                    // Application Insights for all categories.
-                    loggingBuilder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
-                        ("", LogLevel.Trace);
-                });
-    }
-}
+builder.Services.AddControllersWithViews(); ;
+
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+app.UseRouting();
+
+app.UseIdentityServer();
+app.UseAuthorization();
+
+//app.MapControllerRoute(
+//  name: "default",
+//  pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages().RequireAuthorization();
+
+app.Run();

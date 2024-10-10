@@ -28,7 +28,7 @@ namespace Api.Controllers
             {
                 return await grain.TakeSecret();
             }
-            catch (NotAuthorizedException)
+            catch (AuthorizationException)
             {
                 return Unauthorized(LogMessages.AccessDenied);
             }

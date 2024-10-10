@@ -1,62 +1,123 @@
-﻿using System.IO;
+using Api;
+using Api.Orleans;
+using Authzi.Identity.DuendeSoftware.IdentityServer;
+using Authzi.MicrosoftOrleans.DuendeSoftware.IdentityServer;
+using Authzi.Security;
 using Common;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.SnapshotCollector;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using GrainsInterfaces;
+//using IdentityModel.AspNetCore.AccessTokenValidation;
+using IdentityModel.AspNetCore.OAuth2Introspection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Abstractions;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
+using Orleans;
+using Orleans.Hosting;
 
-namespace Api
-{
-    // ReSharper disable once ClassNeverInstantiated.Global
-    public class Program
+var builder = WebApplication.CreateBuilder(args);
+
+//IdentityServer credentials. Do not use this for production!
+var apiIdentityServerConfig = new IdentityServerConfig(Config.IdentityServerUrl,
+    "Api1", @"TFGB=?Gf3UvH+Uqfu_5p", "Cluster");
+
+var clusterIdentityServerConfig = new IdentityServerConfig(Config.IdentityServerUrl,
+    "Cluster", "@3x3g*RLez$TNU!_7!QW", "Cluster");
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+
+builder.Services.AddAuthentication("token")
+  // JWT tokens
+  .AddJwtBearer("token", options =>
+  {
+    // For development environments only. Do not use for production.
+    options.RequireHttpsMetadata = false;
+
+    options.Authority = apiIdentityServerConfig.Url;
+    options.Audience = "Api1";
+    options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
+      ValidateAudience = false
+    };
+    // if token does not contain a dot, it is a reference token
+    // https://leastprivilege.com/2020/07/06/flexible-access-token-validation-in-asp-net-core/
+    options.ForwardDefaultSelector = Extensions.ForwardReferenceToken("introspection");
+  })
+  .AddOAuth2Introspection("introspection", options =>
+  {
+    options.Authority = apiIdentityServerConfig.Url;
 
-            var host = CreateHostBuilder(args).Build();
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
-            
-            // This will be picked up by AI
-            logger.LogInformation("From Api. Running the api host now..");
-            host.Run();
-        }
+    // this maps to the API resource name and secret
+    options.ClientId = apiIdentityServerConfig.ClientId;
+    options.ClientSecret = apiIdentityServerConfig.ClientSecret;
+  });
+//// reference tokens
+//.AddOAuth2Introspection("introspection", options =>
+//{
+//    options.Authority = apiIdentityServerConfig.Url;
+//    // For development environments only. Do not use for production.
+//    options.DiscoveryPolicy.RequireHttps = true;
+//    options.ClientId = apiIdentityServerConfig.ClientId;
+//    options.ClientSecret = apiIdentityServerConfig.ClientSecret;
+//});
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services =>
-                {
-                    var config = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", optional: true)
-                        .Build();
+builder.Services.AddControllers();
+builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-                    // ApplicationInsights
-                    services.AddSingleton<ITelemetryInitializer, ApiTelemetryInitializer>();
-                    services.AddSnapshotCollector((configuration) =>
-                        config.Bind(nameof(SnapshotCollectorConfiguration), configuration));
-                    services.AddApplicationInsightsTelemetry();
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    // Providing an instrumentation key here is required if you're using
-                    // standalone package Microsoft.Extensions.Logging.ApplicationInsights
-                    // or if you want to capture logs from early in the application startup
-                    // pipeline from Startup.cs or Program.cs itself.
-                    loggingBuilder.AddApplicationInsights(Config.InstrumentationKey);
+//builder.Services.AddHttpClient(OAuth2IntrospectionDefaults.BackChannelHttpClientName)
+//    .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(true));
 
-                    // Optional: Apply filters to control what logs are sent to Application Insights.
-                    // The following configures LogLevel Information or above to be sent to
-                    // Application Insights for all categories.
-                    loggingBuilder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
-                        ("", LogLevel.Trace);
-                });
-    }
-}
+builder.UseOrleansClient(client =>
+{
+  client.UseLocalhostClustering().ConfigureServices(services =>
+  {
+    services.AddOrleansClientAuthorization(clusterIdentityServerConfig, config =>
+    {
+      config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
+      config.ConfigureAccessTokenVerifierOptions = options =>
+      {
+        options.InMemoryCacheEnabled = true;
+      };
+      config.ConfigureSecurityOptions = options =>
+      {
+        //For not production environments only!
+        options.RequireHttps = false;
+      };
+
+      config.TracingEnabled = true;
+    });
+
+    //services.AddSingleton<Func<IHttpContextAccessor>>(serviceProvider => () => _httpContextAccessor);
+    services.AddTransient<IAccessTokenProvider, AspNetCoreAccessTokenProvider>();
+  });
+});
+
+//// ReSharper disable once RedundantTypeArgumentsOfMethod
+//builder.Services.AddSingleton<IClusterClient>(serviceProvider =>
+//{
+//    var logger = serviceProvider.GetRequiredService<ILogger<IClusterClient>>();
+//    var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
+
+//    var provider = new OrleansClusterClientProvider(
+//        serviceProvider.GetService<IHttpContextAccessor>(),
+//        logger, apiIdentityServerConfig, simpleClusterAzureStorageConnection,
+//        telemetryClient);
+
+//    provider.StartClientWithRetries(out var client);
+
+//    return client;
+//});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

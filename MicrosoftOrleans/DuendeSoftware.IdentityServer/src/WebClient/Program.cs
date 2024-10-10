@@ -1,59 +1,82 @@
-﻿using System.IO;
-using Common;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.SnapshotCollector;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 
-namespace WebClient
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton<IDiscoveryCache>(serviceProvider =>
 {
-    public static class Program
+    var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+
+    return new DiscoveryCache(Common.Config.IdentityServerUrl,
+        () => factory.CreateClient());
+});
+
+builder.Services.AddHttpClient("api", client =>
+{
+    client.BaseAddress = new Uri(Common.Config.ApiUrl);
+});
+
+builder.Services.AddAuthentication(options =>
     {
-        public static void Main(string[] args)
-        {
-            var host = CreateHostBuilder(args).Build();
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    })
+    .AddCookie()
+    .AddOpenIdConnect(options =>
+    {
+        // For development environments only. Do not use for production.
+        options.RequireHttpsMetadata = false;
 
-            var logger = host.Services.GetService<ILoggerFactory>().CreateLogger<ILogger>();
-            HostInfo.Log(logger);
+        options.GetClaimsFromUserInfoEndpoint = true;
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
-            host.Run();
-        }
+        options.Authority = Common.Config.IdentityServerUrl;
+        options.ClientId = "WebClient";
+        options.ClientSecret = "pckJ#MH-9f9K?+^Bzx&4";
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services =>
-                {
-                    var config = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", optional: true)
-                        .Build();
+        options.ResponseType = "code";
+        options.UsePkce = true;
+        options.SaveTokens = true;
 
-                    // ApplicationInsights
-                    services.AddSingleton<ITelemetryInitializer, WebClientTelemetryInitializer>();
-                    services.AddSnapshotCollector((configuration) =>
-                        config.Bind(nameof(SnapshotCollectorConfiguration), configuration));
-                    services.AddApplicationInsightsTelemetry();
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureLogging(builder =>
-                {
-                    // Providing an instrumentation key here is required if you're using
-                    // standalone package Microsoft.Extensions.Logging.ApplicationInsights
-                    // or if you want to capture logs from early in the application startup
-                    // pipeline from Startup.cs or Program.cs itself.
-                    builder.AddApplicationInsights(Config.InstrumentationKey);
+        options.Scope.Add("Api1");
+        options.Scope.Add("Cluster");
+        options.Scope.Add("Api1.Read");
+        options.Scope.Add("Api1.Write");
 
-                    // Optional: Apply filters to control what logs are sent to Application Insights.
-                    // The following configures LogLevel Information or above to be sent to
-                    // Application Insights for all categories.
-                    builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
-                        ("", LogLevel.Trace);
-                });
-    }
+        options.Scope.Add("offline_access");
+
+        //var isNonProductionEnvironment = _env.IsDevelopment() || _env.IsStaging();
+        //options.BackchannelHttpHandler = CreateHttpClientHandler(true);
+    });
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
+
+//app.UseAuthentication();
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+//app.UseCookiePolicy();
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();

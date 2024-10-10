@@ -1,18 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Common;
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using WebClient.Models;
 
 namespace WebClient.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly TelemetryClient _telemetryClient;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(TelemetryClient telemetryClient)
+        public HomeController(ILogger<HomeController> logger)
         {
-            _telemetryClient = telemetryClient;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -20,14 +18,15 @@ namespace WebClient.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Slow()
+        public IActionResult Privacy()
         {
-            await Task.Delay(10000);
-            _telemetryClient.TrackEvent("Very slow process completed.",
-                new Dictionary<string, string>()
-                    {{"EventId", LogEvents.VerySlowProcessCompleted.ToString()}});
-
             return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

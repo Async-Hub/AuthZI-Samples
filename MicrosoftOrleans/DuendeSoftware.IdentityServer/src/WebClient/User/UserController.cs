@@ -1,16 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
 using IdentityModel.Client;
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
 using WebClient.Controllers;
 
 namespace WebClient.User
@@ -19,14 +11,12 @@ namespace WebClient.User
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<HomeController> _logger;
-        private readonly TelemetryClient _telemetryClient;
 
         public UserController(IHttpContextAccessor httpContextAccessor,
-            ILogger<HomeController> logger, TelemetryClient telemetryClient)
+            ILogger<HomeController> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
-            _telemetryClient = telemetryClient;
         }
 
         public IActionResult Index()

@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
+﻿using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Test;
 using IdentityModel;
-using IdentityServer4.Models;
 using IdentityServer4.Quickstart.UI;
-using IdentityServer4.Test;
 
 namespace IdentityServer4
 {
-    public static class IdentityServerConfig
+  public static class IdentityServerConfig
     {
         public static IEnumerable<ApiScope> GetApiScopes()
         {
