@@ -5,14 +5,12 @@ using Authzi.MicrosoftOrleans.DuendeSoftware.IdentityServer;
 using Authzi.Security;
 using Common;
 using GrainsInterfaces;
-//using IdentityModel.AspNetCore.AccessTokenValidation;
-using IdentityModel.AspNetCore.OAuth2Introspection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.IdentityModel.Abstractions;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualBasic;
-using Orleans;
-using Orleans.Hosting;
+using System.IdentityModel.Tokens.Jwt;
+
+Console.Title = "Api";
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +22,6 @@ var clusterIdentityServerConfig = new IdentityServerConfig(Config.IdentityServer
     "Cluster", "@3x3g*RLez$TNU!_7!QW", "Cluster");
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
 builder.Services.AddAuthentication("token")
@@ -36,7 +33,7 @@ builder.Services.AddAuthentication("token")
 
     options.Authority = apiIdentityServerConfig.Url;
     options.Audience = "Api1";
-    options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+    options.TokenValidationParameters.ValidTypes = ["at+jwt"];
     options.TokenValidationParameters = new TokenValidationParameters
     {
       ValidateAudience = false
@@ -45,23 +42,17 @@ builder.Services.AddAuthentication("token")
     // https://leastprivilege.com/2020/07/06/flexible-access-token-validation-in-asp-net-core/
     options.ForwardDefaultSelector = Extensions.ForwardReferenceToken("introspection");
   })
-  .AddOAuth2Introspection("introspection", options =>
+	// Reference tokens
+	.AddOAuth2Introspection("introspection", options =>
   {
     options.Authority = apiIdentityServerConfig.Url;
-
+    // For development environments only. Do not use for production.
+    // options.DiscoveryPolicy.RequireHttps = false;
+		
     // this maps to the API resource name and secret
-    options.ClientId = apiIdentityServerConfig.ClientId;
+		options.ClientId = apiIdentityServerConfig.ClientId;
     options.ClientSecret = apiIdentityServerConfig.ClientSecret;
   });
-//// reference tokens
-//.AddOAuth2Introspection("introspection", options =>
-//{
-//    options.Authority = apiIdentityServerConfig.Url;
-//    // For development environments only. Do not use for production.
-//    options.DiscoveryPolicy.RequireHttps = true;
-//    options.ClientId = apiIdentityServerConfig.ClientId;
-//    options.ClientSecret = apiIdentityServerConfig.ClientSecret;
-//});
 
 builder.Services.AddControllers();
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -73,7 +64,8 @@ builder.UseOrleansClient(client =>
 {
   client.UseLocalhostClustering().ConfigureServices(services =>
   {
-    services.AddOrleansClientAuthorization(clusterIdentityServerConfig, config =>
+		// TODO: clusterIdentityServerConfig should be used here
+		services.AddOrleansClientAuthorization(apiIdentityServerConfig, config =>
     {
       config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
       config.ConfigureAccessTokenVerifierOptions = options =>
@@ -93,22 +85,6 @@ builder.UseOrleansClient(client =>
     services.AddTransient<IAccessTokenProvider, AspNetCoreAccessTokenProvider>();
   });
 });
-
-//// ReSharper disable once RedundantTypeArgumentsOfMethod
-//builder.Services.AddSingleton<IClusterClient>(serviceProvider =>
-//{
-//    var logger = serviceProvider.GetRequiredService<ILogger<IClusterClient>>();
-//    var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
-
-//    var provider = new OrleansClusterClientProvider(
-//        serviceProvider.GetService<IHttpContextAccessor>(),
-//        logger, apiIdentityServerConfig, simpleClusterAzureStorageConnection,
-//        telemetryClient);
-
-//    provider.StartClientWithRetries(out var client);
-
-//    return client;
-//});
 
 var app = builder.Build();
 

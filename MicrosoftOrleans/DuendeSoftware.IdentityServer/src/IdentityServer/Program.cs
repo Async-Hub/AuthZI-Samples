@@ -1,4 +1,6 @@
-using IdentityServer4;
+using IdentityServer;
+
+Console.Title = "IdentityServer";
 
 var builder = WebApplication.CreateBuilder(args);
 

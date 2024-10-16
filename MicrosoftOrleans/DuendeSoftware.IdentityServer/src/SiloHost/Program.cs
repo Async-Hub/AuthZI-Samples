@@ -5,12 +5,10 @@ using GrainsInterfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Orleans.Configuration;
-using Orleans.Hosting;
 
 namespace SiloHost
 {
-  internal static class Program
+	internal static class Program
   {
     public static async Task Main(string[] args)
     {
@@ -29,7 +27,7 @@ namespace SiloHost
     private static IHost CreateSiloHostBuilder(string[] args)
     {
       var identityServerConfig = new IdentityServerConfig(Config.IdentityServerUrl,
-          "Api1", @"TFGB=?Gf3UvH+Uqfu_5p", "Cluster");
+					"Cluster", @"@3x3g*RLez$TNU!_7!QW", "Cluster");
 
       var builder = Host.CreateDefaultBuilder(args)
           .UseEnvironment(Environments.Staging)
@@ -43,7 +41,7 @@ namespace SiloHost
                                   config =>
                                   {
                                     config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
-                                    config.TracingEnabled = true;
+																		config.TracingEnabled = true;
                                     config.ConfigureSecurityOptions = options =>
                                       {
                                         //For not production environments only!

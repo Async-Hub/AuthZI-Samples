@@ -2,11 +2,10 @@
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Test;
 using IdentityModel;
-using IdentityServer4.Quickstart.UI;
 
-namespace IdentityServer4
+namespace IdentityServer
 {
-  public static class IdentityServerConfig
+	public static class IdentityServerConfig
     {
         public static IEnumerable<ApiScope> GetApiScopes()
         {
@@ -29,7 +28,7 @@ namespace IdentityServer4
             api1.Scopes.Add("Api1.Read");
             api1.Scopes.Add("Api1.Write");
 
-            var orleans = new ApiResource("Cluster");
+			var orleans = new ApiResource("Cluster");
             orleans.ApiSecrets.Add(new Secret("@3x3g*RLez$TNU!_7!QW".Sha256()));
             resources.Add(orleans);
 
@@ -104,7 +103,7 @@ namespace IdentityServer4
                 {
                     ClientId = "WebClient",
                     ClientName = "Web Client",
-                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenType = AccessTokenType.Jwt,
                     AllowedGrantTypes = GrantTypes.Code,
                     AllowOfflineAccess = true,
                     RequireConsent = true,
