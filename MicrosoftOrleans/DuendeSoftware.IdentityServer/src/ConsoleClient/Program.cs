@@ -1,0 +1,49 @@
+﻿using IdentityModel.Client;
+
+namespace ConsoleClient
+{
+	internal static class Program
+	{
+		private static async Task Main(string[] args)
+		{
+			Console.Title = "ConsoleClient";
+
+			Console.WriteLine("Please press 's' to start.");
+
+			while (Console.ReadKey().Key == ConsoleKey.S)
+			{
+				try
+				{
+					var accessToken = await TokenProvider.RetrieveToken(Common.Config.IdentityServerUrl);
+					Console.WriteLine($"AccessToken: {accessToken}");
+
+					var httpClientHandler = Common.HttpClientExtensions.CreateHttpClientHandler(true);
+					var httpClient = new HttpClient(httpClientHandler)
+					{
+						BaseAddress = new Uri(Common.Config.ApiUrl),
+					};
+					httpClient.SetBearerToken(accessToken);
+
+					// Call API
+					// Emulate an issue.
+					//const string userId = "Alice";
+					const string userId = "1";
+					var response = await httpClient.GetAsync($"/api/secret/{userId}");
+					if (!response.IsSuccessStatusCode)
+					{
+						Console.WriteLine(response.StatusCode);
+					}
+					else
+					{
+						var content = await response.Content.ReadAsStringAsync();
+						Console.WriteLine(content);
+					}
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+				}
+			}
+		}
+	}
+}

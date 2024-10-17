@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IdentityModel" Version="7.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+		<PackageReference Include="IdentityModel.AspNetCore.OAuth2Introspection" Version="6.2.0" />
+		<PackageReference Include="Microsoft.Orleans.Client" Version="8.2.*" />
+		<PackageReference Include="Authzi.MicrosoftOrleans" Version="0.1.9" />
+		<PackageReference Include="Authzi.MicrosoftOrleans.DuendeSoftware.IdentityServer" Version="0.1.9" />
+		<PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.1.2" />
+		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.1.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Interfaces\GrainsInterfaces.csproj" />
+	</ItemGroup>
+
+</Project>
