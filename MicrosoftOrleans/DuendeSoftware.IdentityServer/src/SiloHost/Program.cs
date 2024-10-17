@@ -59,7 +59,7 @@ namespace SiloHost
           });
 
       var host = builder.Build();
-      var logger = host.Services.GetService<ILoggerFactory>().CreateLogger<ILogger>();
+      var logger = host.Services.GetService<ILoggerFactory>()!.CreateLogger<ILogger>();
       HostInfo.Log(logger);
 
       return host;

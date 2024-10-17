@@ -1,12 +1,8 @@
-﻿using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using IdentityModel.Client;
+﻿using IdentityModel.Client;
 
 namespace ConsoleClient
 {
-    internal static class TokenProvider
+	internal static class TokenProvider
     {
         internal static async Task<string> RetrieveToken(string url)
         {

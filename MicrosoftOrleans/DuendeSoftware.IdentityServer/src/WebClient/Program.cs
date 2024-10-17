@@ -1,10 +1,10 @@
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using System.IdentityModel.Tokens.Jwt;
 
 Console.Title = "WebClient";
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,59 +31,62 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton<IDiscoveryCache>(serviceProvider =>
 {
-    var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+	var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
-    return new DiscoveryCache(Common.Config.IdentityServerUrl,
-        () => factory.CreateClient());
+	return new DiscoveryCache(Common.Config.IdentityServerUrl,
+			() => factory.CreateClient());
 });
 
 builder.Services.AddHttpClient("api", client =>
 {
-    client.BaseAddress = new Uri(Common.Config.ApiUrl);
+	client.BaseAddress = new Uri(Common.Config.ApiUrl);
 });
 
 builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-    })
-    .AddCookie()
-    .AddOpenIdConnect(options =>
-    {
-        // For development environments only. Do not use for production.
-        options.RequireHttpsMetadata = false;
+		{
+			options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+		})
+		.AddCookie()
+		.AddOpenIdConnect(options =>
+		{
+			// For development environments only. Do not use for production.
+			options.RequireHttpsMetadata = false;
 
-        options.GetClaimsFromUserInfoEndpoint = true;
-        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+			options.GetClaimsFromUserInfoEndpoint = true;
+			options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
-        options.Authority = Common.Config.IdentityServerUrl;
-        options.ClientId = "WebClient";
-        options.ClientSecret = "pckJ#MH-9f9K?+^Bzx&4";
+			options.Authority = Common.Config.IdentityServerUrl;
+			options.ClientId = "WebClient";
+			options.ClientSecret = "pckJ#MH-9f9K?+^Bzx&4";
 
-        options.ResponseType = "code";
-        options.UsePkce = true;
-        options.SaveTokens = true;
+			options.ResponseType = "code";
+			options.UsePkce = true;
+			options.SaveTokens = true;
 
-        options.Scope.Add("Api1");
-        options.Scope.Add("Cluster");
-        options.Scope.Add("Api1.Read");
-        options.Scope.Add("Api1.Write");
+			options.Scope.Add("Api1");
+			options.Scope.Add("Cluster");
+			options.Scope.Add("Api1.Read");
+			options.Scope.Add("Api1.Write");
 
-        options.Scope.Add("offline_access");
+			//options.GetClaimsFromUserInfoEndpoint = true;
+			//options.ClaimActions.MapUniqueJsonKey("sub", "sub");
 
-        //var isNonProductionEnvironment = _env.IsDevelopment() || _env.IsStaging();
-        //options.BackchannelHttpHandler = CreateHttpClientHandler(true);
-    });
+			options.Scope.Add("offline_access");
+
+			//var isNonProductionEnvironment = _env.IsDevelopment() || _env.IsStaging();
+			//options.BackchannelHttpHandler = CreateHttpClientHandler(true);
+		});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for
-    // production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+	app.UseExceptionHandler("/Home/Error");
+	// The default HSTS value is 30 days. You may want to change this for
+	// production scenarios, see https://aka.ms/aspnetcore-hsts.
+	app.UseHsts();
 }
 
 //app.UseAuthentication();
@@ -95,7 +98,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+		name: "default",
+		pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

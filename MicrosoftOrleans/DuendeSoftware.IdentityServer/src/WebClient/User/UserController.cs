@@ -28,8 +28,8 @@ namespace WebClient.User
       httpClient.SetBearerToken(accessToken);
 
       string result;
-
-      var response = await httpClient.GetAsync($"{Common.Config.ApiUrl}/api/User/Alice");
+      var id = User.Claims.Single(claim=> claim.Type == "sub").Value;
+      var response = await httpClient.GetAsync($"{Common.Config.ApiUrl}/api/User/{id}");
       if (response.IsSuccessStatusCode)
       {
         result = await response.Content.ReadAsStringAsync();

@@ -65,7 +65,7 @@ builder.UseOrleansClient(client =>
   client.UseLocalhostClustering().ConfigureServices(services =>
   {
 		// TODO: clusterIdentityServerConfig should be used here
-		services.AddOrleansClientAuthorization(apiIdentityServerConfig, config =>
+		services.AddOrleansClientAuthorization(clusterIdentityServerConfig, config =>
     {
       config.ConfigureAuthorizationOptions = AuthorizationConfig.ConfigureOptions;
       config.ConfigureAccessTokenVerifierOptions = options =>
